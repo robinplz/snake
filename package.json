@@ -1,0 +1,22 @@
+{
+  "name": "snake",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "npm run dev",
+    "build": "tsc && vite build",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "pixi.js": "^8.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.16.0",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.16.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.2"
+  }
+}
