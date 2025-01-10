@@ -35,7 +35,7 @@ async function initialize(app: Application) {
   const body = new Body(board.container, Board.boardSize);
 
   // HUD
-  new HUD(app);
+  new HUD(app, board.container);
 
   // observe game states
   GameStates.instance.onChanged.push((property: String) => {
