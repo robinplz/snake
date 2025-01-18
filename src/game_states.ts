@@ -2,6 +2,7 @@ import { formatTime } from "./util";
 
 export class GameStates {
   private running_ = false;
+  private bestScore_ = 0;
   private score_ = 0;
   private timeMS = 0;
   private timeString_ = '00:00';
@@ -22,8 +23,15 @@ export class GameStates {
   set score(value) {
     if (value != this.score_) {
       this.score_ = value;
+      if (this.bestScore_ < value) {
+        this.bestScore_ = value;
+      }
       this.onChanged.forEach(f => f('score'));
     }
+  }
+
+  get bestScore() {
+    return this.bestScore_;
   }
 
   get timeString() {

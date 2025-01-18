@@ -9,7 +9,9 @@ export class HUD {
   private timeText: Text;
   private board: Container;
   private boardCover: Graphics;
+  private bestScoreText: Text;
   private startLabel: Text;
+
 
   constructor(app: Application, board: Container) {
     this.board = board;
@@ -35,10 +37,16 @@ export class HUD {
 
     // start label
     this.startLabel = new Text({text: "Press SPACE to Start...", style: {fontSize: 20}});
-    const screenCenter = centerOf(app);
-    const labelCenter = { x: this.startLabel.width / 2, y: this.startLabel.height / 2 };
-    this.startLabel.position.set(screenCenter.x - labelCenter.x, screenCenter.y - labelCenter.y);
+    const containerCenter = centerOf(app);
+    const startLabelCenter = { x: this.startLabel.width / 2, y: this.startLabel.height / 2 };
+    this.startLabel.position.set(containerCenter.x - startLabelCenter.x, containerCenter.y - startLabelCenter.y);
     this.container.addChild(this.startLabel);
+
+    // best score text (above start label)
+    this.bestScoreText = new Text({text: "Best Score: 0", style: {fontSize: 20}});
+    const bestScoreLabelCenter = { x: this.bestScoreText.width / 2, y: this.bestScoreText.height / 2 };
+    this.bestScoreText.position.set(containerCenter.x - bestScoreLabelCenter.x, containerCenter.y - bestScoreLabelCenter.y - 32);
+    this.container.addChild(this.bestScoreText);
 
     GameStates.instance.onChanged.push(this.handleGameStatesChanged.bind(this));
     this.updateWidgets(GameStates.instance);
@@ -58,18 +66,21 @@ export class HUD {
   private updateWidgets(gameStates: GameStates) {
     this.scoreText.text = `Score: ${gameStates.score}`;
     this.timeText.text = `Time: ${gameStates.timeString}`;
+    this.bestScoreText.text = `Best Score: ${gameStates.bestScore}`;
     
     if (gameStates.running) {
       // hide board cover, remove blur, and hide start label
       this.boardCover.visible = false;
       this.board.filters = [];
       this.startLabel.visible = false;
+      this.bestScoreText.visible = false;
     }
     else {
       // display board cover, blur board out, and show start label
       this.boardCover.visible = true;
-      this.board.filters = new BlurFilter({strength: 12});
+      this.board.filters = new BlurFilter({strength: 16, quality: 8});
       this.startLabel.visible = true;
+      this.bestScoreText.visible = true;
     }
   }
 
