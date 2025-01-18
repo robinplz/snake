@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Text } from 'pixi.js';
 import { Board } from './board';
 import { GameStates } from './game_states';
 
@@ -23,11 +23,16 @@ export class Body {
   private container: Container;
   private snakeContainer: Container;
   private fruitContainer: Container;
+  private goldenFruitContainer: Container;
   private body: CellIndex[] = [];
   private fruit?: CellIndex;
+  private goldenFruit?: CellIndex;
   private action: number = 0; // 0: no action, 1: turn left, 2: turn right
   private direction: Vector = Vector.up;
   private boardSize: number;
+  private fruitConsumed: number = 0;
+  private goldenFruitConsumed: number = 0;
+  private goldenFruitLife?: number;
 
   constructor(parent: Container, boardSize: number) {
     this.container = new Container();
@@ -36,6 +41,8 @@ export class Body {
     this.container.addChild(this.snakeContainer);
     this.fruitContainer = new Container();
     this.container.addChild(this.fruitContainer);
+    this.goldenFruitContainer = new Container();
+    this.container.addChild(this.goldenFruitContainer);
 
     this.boardSize = boardSize;
 
@@ -46,6 +53,8 @@ export class Body {
   }
 
   update(): boolean {
+    this.growGoldenFruit();
+
     if (!this.move()) return false;
 
     this.redraw();
@@ -53,6 +62,11 @@ export class Body {
   }
 
   reset() {
+    this.fruitConsumed = 0;
+    this.goldenFruitConsumed = 0;
+    this.retireFruit();
+    this.retireGoldenFruit();
+
     const gridSize = Board.gridSize;
     this.body = [];
     this.body.push({x: gridSize / 2, y: gridSize - 4});
@@ -67,9 +81,11 @@ export class Body {
   }
 
   private spawnFruit() {
+    if (this.fruit) return; // already spawned
+
     const forbiddenCells: CellIndex[] = [];
     forbiddenCells.push(...this.body); // avoid spawning fruit on the snake
-    if (this.fruit) forbiddenCells.push(this.fruit); // avoid spawning fruit on the same cell
+    if (this.goldenFruit) forbiddenCells.push(this.goldenFruit); // avoid spawning on golden fruit cell
 
     const gridSize = Board.gridSize;
     let found = false;
@@ -79,6 +95,67 @@ export class Body {
       this.fruit = {x, y};
       found = forbiddenCells.every((index: CellIndex) => index.x !== x || index.y !== y);
     }
+
+    this.spawnGoldenFruit();
+  }
+
+  private spawnGoldenFruit() {
+    if (this.goldenFruit) return; // already spawned
+
+    // golden fruit spawns on every 5th fruit consumed
+    const kGoldenFruitSpawnRate = 5;
+    if (this.fruitConsumed > 0 && this.fruitConsumed % kGoldenFruitSpawnRate === 0) {
+      const forbiddenCells: CellIndex[] = [];
+      forbiddenCells.push(...this.body); // avoid spawning fruit on the snake
+      if (this.fruit) forbiddenCells.push(this.fruit); // avoid spawning on fruit cell
+
+      const gridSize = Board.gridSize;
+      let found = false;
+      while(!found) {
+        const x = Math.floor(Math.random() * gridSize);
+        const y = Math.floor(Math.random() * gridSize);
+        this.goldenFruit = {x, y};
+        found = forbiddenCells.every((index: CellIndex) => index.x !== x || index.y !== y);
+      }
+      this.goldenFruitLife = 20;
+    }
+  }
+
+  private growGoldenFruit() {
+    if (this.goldenFruitLife) {
+      this.goldenFruitLife -= 1;
+      if (this.goldenFruitLife <= 0) {
+        this.retireGoldenFruit();
+      }
+    }
+  }
+
+  private consumeFruit() {
+    this.fruitConsumed += 1;
+    this.retireFruit();
+    this.spawnFruit();
+
+    // score +1
+    GameStates.instance.score += 1;
+  }
+
+  private consumeGoldenFruit() {
+    this.goldenFruitConsumed += 1;
+    this.retireGoldenFruit();
+
+    // score +10
+    GameStates.instance.score += 10;
+  }
+
+  private retireFruit() {
+    this.fruit = undefined;
+    this.fruitContainer.removeChildren();
+  }
+
+  private retireGoldenFruit() {
+    this.goldenFruit = undefined;
+    this.goldenFruitLife = undefined;
+    this.goldenFruitContainer.removeChildren();
   }
 
   private move(): boolean {
@@ -92,12 +169,13 @@ export class Body {
     // check if the new head is on the fruit
     if (this.fruit && newHead.x === this.fruit.x && newHead.y === this.fruit.y) {
       newBody.push(...this.body);
-
-      this.spawnFruit();
-
-      // score +1
-      GameStates.instance.score += 1;
-    } else {
+      this.consumeFruit();
+    }
+    else if (this.goldenFruit && newHead.x === this.goldenFruit.x && newHead.y === this.goldenFruit.y) {
+      newBody.push(...this.body);
+      this.consumeGoldenFruit();
+    }
+    else {
       for (let i = 1; i < this.body.length; i++) {
         newBody.push({x: this.body[i-1].x, y: this.body[i-1].y});
       }
@@ -173,13 +251,35 @@ export class Body {
 
     // draw fruit
     const kFruitCellColor = "#206040";
-    this.fruitContainer.removeChildren();
-    if (this.fruit) {
+    if (this.fruit && this.fruitContainer.children.length === 0) {
       const cell = new Graphics({width: cellFillSize, height: cellFillSize});
       cell.position.set(this.fruit.x * cellSize + 2, this.fruit.y * cellSize + 2);
       cell.roundRect(0, 0, cellFillSize, cellFillSize, 2);
       cell.fill(kFruitCellColor);
       this.fruitContainer.addChild(cell);
+    }
+
+    // draw golden fruit
+    const kGoldenFruitCellColor = "#EEC800";
+    if (this.goldenFruit) {
+      if (this.goldenFruitContainer.children.length === 0) {
+        // create the golden fruit cell
+        const cell = new Graphics({width: cellFillSize, height: cellFillSize});
+        const cellOrigin = {x: this.goldenFruit.x * cellSize + 2, y: this.goldenFruit.y * cellSize + 2};
+        cell.position.set(cellOrigin.x, cellOrigin.y);
+        cell.roundRect(0, 0, cellFillSize, cellFillSize, 2);
+        cell.fill(kGoldenFruitCellColor);
+        this.goldenFruitContainer.addChild(cell);
+        
+        // create the life label
+        const lifeText = new Text({text: `${this.goldenFruitLife}`, style: {fontSize: 11, fill: 'white'}});
+        lifeText.position.set(cellOrigin.x + 1, cellOrigin.y);
+        this.goldenFruitContainer.addChild(lifeText);
+      }
+
+      // update the life label
+      const lifeText = this.goldenFruitContainer.children[1] as Text;
+      lifeText.text = `${this.goldenFruitLife}`;
     }
   }
 }
