@@ -5,6 +5,10 @@ on:
     branches:
       - main  # Trigger only when there is a push to the main branch
 
+# Set permissions for GITHUB_TOKEN
+permissions:
+  contents: write  # Allow writing to the repository (e.g., pushing to gh-pages)
+
 jobs:
   deploy:
     runs-on: ubuntu-latest  # Use the latest Ubuntu environment
