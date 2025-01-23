@@ -5,6 +5,13 @@ import { HUD } from "./hud";
 import { GameStates } from "./game_states";
 import { centerOf } from "./util";
 
+// update version number
+const versionElement = document.getElementById('version');
+if (versionElement) {
+  versionElement.textContent = __APP_VERSION__;
+}
+
+// pixi app code
 (async () => {
   const app = new Application();
   await initialize(app);
