@@ -59,7 +59,7 @@ export class HUD {
     });
   }
 
-  private handleGameStatesChanged(property: String) {
+  private handleGameStatesChanged() {
     this.updateWidgets(GameStates.instance);
   }
 

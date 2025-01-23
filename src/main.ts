@@ -1,4 +1,4 @@
-import { Application, Point, Ticker } from "pixi.js";
+import { Application, Ticker } from "pixi.js";
 import { Board } from "./board";
 import { Body } from "./body";
 import { HUD } from "./hud";
