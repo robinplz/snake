@@ -20,16 +20,11 @@ export default defineConfig({
       manifest: {
         name: "Snake Game",
         short_name: "Snake",
-        start_url: "/",
+        start_url: "/snake/",
         display: "standalone",
-        background_color: "#ffffff",
-        theme_color: "#3498db",
+        background_color: "#F0FAFF",
+        theme_color: "#1DBF53",
         icons: [
-          {
-            src: "icon-180x180.png",
-            sizes: "180x180",
-            type: "image/png",
-          },
           {
             src: "icon-192x192.png",
             sizes: "192x192",
