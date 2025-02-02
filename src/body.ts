@@ -27,7 +27,6 @@ export class Body {
   private body: CellIndex[] = [];
   private fruit?: CellIndex;
   private goldenFruit?: CellIndex;
-  private action: number = 0; // 0: no action, 1: turn left, 2: turn right
   private direction: Vector = Vector.up;
   private boardSize: number;
   private fruitConsumed: number = 0;
@@ -45,17 +44,13 @@ export class Body {
     this.container.addChild(this.goldenFruitContainer);
 
     this.boardSize = boardSize;
-
-    // keyboard input
-    window.addEventListener("keyup", (event) => this.handleKeyUp(event));
-
     this.reset();
   }
 
-  update(): boolean {
+  update(action: number): boolean {
     this.growGoldenFruit();
 
-    if (!this.move()) return false;
+    if (!this.move(action)) return false;
 
     this.redraw();
     return true;
@@ -77,7 +72,6 @@ export class Body {
     this.spawnFruit();
 
     this.direction = Vector.up;
-    this.action = 0;
   }
 
   private spawnFruit() {
@@ -158,9 +152,8 @@ export class Body {
     this.goldenFruitContainer.removeChildren();
   }
 
-  private move(): boolean {
-    this.direction = this.nextDirection();
-    this.action = 0;
+  private move(action: number): boolean {
+    this.direction = this.nextDirection(action);
 
     const newBody: CellIndex[] = [];
     const newHead: CellIndex = {x: this.body[0].x + this.direction.x, y: this.body[0].y + this.direction.y};
@@ -200,15 +193,15 @@ export class Body {
     return true;
   }
 
-  private nextDirection(): Vector {
-    if (this.action === 1) {
+  private nextDirection(action: number): Vector {
+    if (action === 1) {
       switch (this.direction) {
       case Vector.up: return Vector.left;
       case Vector.down: return Vector.right;
       case Vector.left: return Vector.down;
       case Vector.right: return Vector.up;
       }
-    } else if (this.action === 2) {
+    } else if (action === 2) {
       switch (this.direction) {
       case Vector.up: return Vector.right;
       case Vector.down: return Vector.left;
@@ -217,18 +210,6 @@ export class Body {
       }
     }
     return this.direction;
-  }
-
-  private handleKeyUp(event: KeyboardEvent) {
-    console.log("key Up:", event.key);
-    switch (event.key) {
-    case "ArrowLeft":
-      this.action = 1;
-      break;
-    case "ArrowRight":
-      this.action = 2;
-      break;
-    }
   }
 
   private redraw() {

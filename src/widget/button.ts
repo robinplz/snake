@@ -12,12 +12,12 @@ type ButtonOptions = {
 export class Button {
   private title: string;
   private x: number;
-    private y: number;
-    private width: number;
-    private height: number;
-    private onClick: () => void;
+  private y: number;
+  private width: number;
+  private height: number;
+  private onClick: () => void;
 
-    private container: Container;
+  private container: Container;
 
   constructor(options: ButtonOptions) {
     this.title = options.title;
