@@ -20,7 +20,7 @@ export default defineConfig({
       manifest: {
         name: "Snake Game",
         short_name: "Snake",
-        start_url: "/snake/",
+        start_url: "https://robinplz.github.io/snake/",
         display: "standalone",
         background_color: "#F0FAFF",
         theme_color: "#1DBF53",
