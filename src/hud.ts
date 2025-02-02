@@ -93,8 +93,9 @@ export class HUD {
     });
 
     // listen to click event
-    this.boardCover.interactive = true;
-    this.boardCover.on("click", () => {
+    this.startLabel.interactive = true;
+    this.startLabel.eventMode = "static";
+    this.startLabel.on("click", () => {
       this.start();
     });
   }
