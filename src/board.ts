@@ -3,7 +3,7 @@ import { Container, Graphics, Point } from 'pixi.js';
 export class Board {
   // data members
   static readonly gridSize = 16;
-  static readonly boardSize = 400;
+  static readonly boardSize = 16*24;
   container: Container;
 
   constructor(center: Point) {

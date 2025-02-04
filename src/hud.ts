@@ -64,22 +64,22 @@ export class HUD {
     const leftButton = Sprite.from("arrow-normal");
     leftButton.position.set(kButtonHMargin, 0);
     leftButton.interactive = true;
-    leftButton.on("click", () => {
-      Inputs.instance.turnLeft();
-    });
     leftButton.on("pointerdown", () => this.handleButtonPointerDown(leftButton));
-    leftButton.on("pointerup", () => this.handleButtonPointerUp(leftButton));
+    leftButton.on("pointerup", () => {
+      Inputs.instance.turnLeft();
+      this.handleButtonPointerUp(leftButton);
+    });
     this.buttonsContainer.addChild(leftButton);
 
     const rightButton = Sprite.from("arrow-normal");
     rightButton.scale.x = -1;
     rightButton.position.set(Board.boardSize - kButtonHMargin, 0);
     rightButton.interactive = true;
-    rightButton.on("click", () => {
-      Inputs.instance.turnRight();
-    });
     rightButton.on("pointerdown", () => this.handleButtonPointerDown(rightButton));
-    rightButton.on("pointerup", () => this.handleButtonPointerUp(rightButton));
+    rightButton.on("pointerup", () => {
+      Inputs.instance.turnRight();
+      this.handleButtonPointerUp(rightButton);
+    });
     this.buttonsContainer.addChild(rightButton);
 
     GameStates.instance.onChanged.push(this.handleGameStatesChanged.bind(this));
@@ -95,7 +95,7 @@ export class HUD {
     // listen to click event
     this.startLabel.interactive = true;
     this.startLabel.eventMode = "static";
-    this.startLabel.on("click", () => {
+    this.startLabel.on("pointerup", () => {
       this.start();
     });
   }
